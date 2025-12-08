@@ -1,0 +1,18 @@
+{% extends 'trips/base.html' %}
+
+{% block content %}
+  <h2>Trips</h2>
+  <p><a href="{% url 'trips:add' %}">Add new trip</a></p>
+  <p><a href="{% url 'trips:booking_add' %}">Book a Trip</a> (or click a specific trip below)</p>
+  <ul>
+    {% for trip in trips %}
+      <li>
+        <a href="{% url 'trips:detail' trip.pk %}">{{ trip }}</a>
+        — <a href="{% url 'trips:edit' trip.pk %}">edit</a>
+        — <a href="{% url 'trips:delete' trip.pk %}">delete</a>
+      </li>
+    {% empty %}
+      <li>No trips yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

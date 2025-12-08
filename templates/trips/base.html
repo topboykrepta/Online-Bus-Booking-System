@@ -1,0 +1,19 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bus Traveller</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+  </head>
+  <body>
+    <header>
+      <h1><a href="{% url 'trips:list' %}">Bus Traveller</a></h1>
+    </header>
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+    <script src="{% static 'main.js' %}"></script>
+  </body>
+</html>

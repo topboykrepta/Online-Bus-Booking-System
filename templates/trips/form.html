@@ -1,0 +1,11 @@
+{% extends 'trips/base.html' %}
+
+{% block content %}
+  <h2>{% if object %}Edit{% else %}Add{% endif %} Trip</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+    <a href="{% url 'trips:list' %}">Cancel</a>
+  </form>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'trips/base.html' %}
+
+{% block content %}
+  <h2>{{ object.title }}</h2>
+  <p><strong>Route:</strong> {{ object.origin }} → {{ object.destination }}</p>
+  <p><strong>Depart:</strong> {{ object.depart_time }}</p>
+  <p><strong>Seats:</strong> {{ object.seats }}</p>
+  <p><strong>Price:</strong> {{ object.price }}</p>
+  <p>
+    <a href="{% url 'trips:edit' object.pk %}">Edit</a>
+    —
+    <a href="{% url 'trips:delete' object.pk %}">Delete</a>
+    —
+    <a href="{% url 'trips:booking_add' %}?trip={{ object.pk }}">Book this trip</a>
+  </p>
+  <p><a href="{% url 'trips:list' %}">Back to list</a></p>
+{% endblock %}
