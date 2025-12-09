@@ -1,9 +1,0 @@
-{% extends 'trips/base.html' %}
-
-{% block content %}
-  <h2>Payment Success</h2>
-  <p>Thank you {{ booking.name }} — your booking (ID {{ booking.pk }}) is confirmed.</p>
-  <p>Trip: {{ booking.trip }}</p>
-  <p>We have recorded your payment.</p>
-  <p><a href="{% url 'trips:list' %}">Back to trips</a></p>
-{% endblock %}

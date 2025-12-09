@@ -1,11 +1,249 @@
 {% extends 'trips/base.html' %}
+{% load static %}
 
 {% block content %}
-  <h2>Book a Trip</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Proceed to Payment</button>
-    <a href="{% url 'trips:list' %}">Cancel</a>
-  </form>
+  <style>
+    .booking-container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background-color: #f9f9f9;
+    }
+    .booking-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: #555;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0,123,255,0.3);
+    }
+    .price-breakdown {
+      background-color: #e8f4f8;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      border-left: 4px solid #007bff;
+    }
+    .price-breakdown p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #333;
+    }
+    .price-breakdown .total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 10px;
+      border-top: 1px solid #ccc;
+      padding-top: 10px;
+    }
+    .button-group {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .button-group button,
+    .button-group a {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .button-group button {
+      background-color: #007bff;
+      color: white;
+    }
+    .button-group button:hover {
+      background-color: #0056b3;
+    }
+    .button-group a {
+      background-color: #6c757d;
+      color: white;
+    }
+    .button-group a:hover {
+      background-color: #545b62;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+    }
+    .checkbox-group input {
+      width: auto;
+      margin-right: 10px;
+    }
+    .form-errors {
+      background: #ffe6e6;
+      border: 1px solid #ffb3b3;
+      color: #800;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+  </style>
+
+  <div class="booking-container">
+    <h2>Book Your Trip</h2>
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="form-errors">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="form-group">
+        {{ form.route.label_tag }}
+        {{ form.route }}
+        {% for err in form.route.errors %}
+          <div class="form-errors">{{ err }}</div>
+        {% endfor %}
+        {% if form.route.value %}
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const routeSelect = document.querySelector('select[name="route"]');
+              if (routeSelect && !routeSelect.value) {
+                routeSelect.value = '{{ form.route.value }}';
+              }
+            });
+          </script>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        {{ form.name.label_tag }}
+        {{ form.name }}
+        {% for err in form.name.errors %}
+          <div class="form-errors">{{ err }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.phone.label_tag }}
+        {{ form.phone }}
+        {% for err in form.phone.errors %}
+          <div class="form-errors">{{ err }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.id_number.label_tag }}
+        {{ form.id_number }}
+        {% for err in form.id_number.errors %}
+          <div class="form-errors">{{ err }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <div class="checkbox-group">
+          {{ form.has_luggage }}
+          {{ form.has_luggage.label_tag }}
+        </div>
+      </div>
+
+      <div class="form-group" id="luggage-weight-group" style="display: none;">
+        {{ form.luggage_weight.label_tag }}
+        {{ form.luggage_weight }}
+        {% for err in form.luggage_weight.errors %}
+          <div class="form-errors">{{ err }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="price-breakdown">
+        <p><strong>Route Price:</strong> <span id="route-price">0.00</span></p>
+        <p><strong>Luggage Fee (over 7kg @ 100/kg):</strong> <span id="luggage-fee-display">0.00</span></p>
+        <div class="total">Total: <span id="live-total">0.00</span></div>
+      </div>
+
+      <div class="button-group">
+        <button type="submit">Book Now</button>
+        <a href="{% url 'trips:home' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // route prices and luggage settings provided from Django context
+    const routePrices = JSON.parse('{{ route_prices|safe|escapejs }}');
+    const luggageFreeKg = Number('{{ luggage_free_kg }}');
+    const luggageFeePerKg = Number('{{ luggage_fee_per_kg }}');
+
+    const routeSelect = document.querySelector('select[name="route"]');
+    const luggageCheckbox = document.querySelector('input[name="has_luggage"]');
+    const luggageWeightInput = document.querySelector('input[name="luggage_weight"]');
+    const luggageWeightGroup = document.getElementById('luggage-weight-group');
+    const routePriceEl = document.getElementById('route-price');
+    const luggageFeeEl = document.getElementById('luggage-fee-display');
+    const totalEl = document.getElementById('live-total');
+
+    // Toggle luggage weight field visibility
+    if (luggageCheckbox) {
+      luggageCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+          luggageWeightGroup.style.display = 'block';
+          if (luggageWeightInput) luggageWeightInput.focus();
+        } else {
+          luggageWeightGroup.style.display = 'none';
+          if (luggageWeightInput) luggageWeightInput.value = '';
+        }
+        updateTotal();
+      });
+    }
+
+    function updateTotal() {
+      const routeVal = routeSelect ? routeSelect.value : null;
+      const routePrice = routeVal && routePrices[routeVal] !== undefined ? Number(routePrices[routeVal]) : 0;
+      const weightVal = luggageWeightInput ? Number(luggageWeightInput.value || 0) : 0;
+      let luggageFee = 0;
+      if (weightVal > luggageFreeKg) {
+        luggageFee = (weightVal - luggageFreeKg) * luggageFeePerKg;
+      }
+
+      // Update displayed values
+      if (routePriceEl) routePriceEl.textContent = routePrice.toFixed(2);
+      if (luggageFeeEl) luggageFeeEl.textContent = luggageFee.toFixed(2);
+      if (totalEl) totalEl.textContent = (routePrice + luggageFee).toFixed(2);
+    }
+
+    // Event listeners
+    if (routeSelect) {
+      routeSelect.addEventListener('change', updateTotal);
+    }
+    if (luggageWeightInput) {
+      luggageWeightInput.addEventListener('input', updateTotal);
+    }
+
+    // initial calculation
+    updateTotal();
+
+    // Force initial route selection if passed via GET parameter
+    window.addEventListener('load', function() {
+      updateTotal();
+    });
+  </script>
 {% endblock %}

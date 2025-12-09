@@ -12,6 +12,7 @@ from .models import Booking
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'phone', 'trip', 'paid', 'created_at')
-    list_filter = ('paid', 'trip')
+    list_display = ('id', 'name', 'phone', 'trip', 'route', 'price', 'paid', 'created_at')
+    list_filter = ('paid', 'trip', 'route')
     search_fields = ('name', 'phone', 'id_number')
+    readonly_fields = ('luggage_fee',)

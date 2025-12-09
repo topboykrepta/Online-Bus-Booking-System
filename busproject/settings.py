@@ -10,7 +10,7 @@ SECRET_KEY = 'replace-this-with-a-secure-key'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -83,6 +83,14 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR]
+# Include the original frontend folder so we can use its `index.html`, `style.css`, `main.js`, and `img/` directly
+STATICFILES_DIRS = [
+    BASE_DIR,
+    BASE_DIR / 'BusTraveller-1.0.0',
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Luggage fee configuration: charge per kg over the free allowance
+LUGGAGE_FREE_KG = 7
+LUGGAGE_FEE_PER_KG = 100  # currency units per kg over the free allowance
